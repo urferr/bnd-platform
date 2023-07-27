@@ -194,11 +194,11 @@ class DependencyHelper {
 	private static Set<ResolvedArtifact> retrieveSourcesForDeps(ConfigurationContainer configurationContainer, Set<ResolvedDependency> allDeps) {
 		List<ExternalDependency> externalDependencies = allDeps.collect {
 			ResolvedDependency dep ->
+            // starting with gradle6 its not allowed anymore to specify configuration and artifact, therefore configuration has been removed!
 			ExternalModuleDependency sourceDep = new DefaultExternalModuleDependency(
 				dep.moduleGroup, 
 				dep.moduleName, 
-				dep.moduleVersion, 
-				dep.configuration)
+				dep.moduleVersion)
             sourceDep.transitive = false
 			def artifact = new DefaultDependencyArtifact(sourceDep.name, "source", "jar", "sources", null)
             sourceDep.addArtifact(artifact)

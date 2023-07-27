@@ -1,18 +1,6 @@
-
-buildscript {
-	repositories {
-		jcenter()
-	}
-	dependencies {
-		classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.5'
-	}
-}
-
 apply plugin: 'groovy'
-apply plugin: 'maven'
 apply plugin: 'signing'
 apply plugin: 'eclipse'
-apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
 
@@ -21,10 +9,10 @@ repositories {
 }
 
 group = 'org.standardout'
-version = '1.7.1'
+version = '1.8.0'
 
-sourceCompatibility = '1.7'
-targetCompatibility = '1.7'
+sourceCompatibility = '11'
+targetCompatibility = '11'
 
 jar {
 	// include license into jar
@@ -34,12 +22,12 @@ jar {
 }
 
 dependencies {
-	compile gradleApi()
-	compile 'biz.aQute.bnd:biz.aQute.bndlib:3.5.0'
-	compile 'org.osgi:osgi.core:6.0.0'
-	compile 'commons-io:commons-io:2.4'
-	compile 'de.undercouch:gradle-download-task:3.1.1'
-	compile localGroovy()
+	implementation  gradleApi()
+	implementation  'biz.aQute.bnd:biz.aQute.bndlib:6.4.1'
+	implementation  'org.osgi:osgi.core:8.0.0'
+	implementation  'commons-io:commons-io:2.9.0'
+	implementation  'de.undercouch:gradle-download-task:5.4.0'
+	implementation  localGroovy()
 }
 
 // package groovydoc into a jar file
@@ -96,13 +84,6 @@ def configurePom(def pom) {
    }
 }
 
-install {
-	repositories.mavenInstaller {
-		// ensure correct artifact ID when installing locally
-		configurePom(pom)
-	}
-}
-
 // sign all artifacts
 signing {
 	required {
@@ -110,25 +91,6 @@ signing {
 		gradle.taskGraph.hasTask('uploadArchives')
 	}
 	sign configurations.archives
-}
-
-uploadArchives {
-	repositories {
-		mavenDeployer {
-			// sign artifacts before upload
-			beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-			
-			// upload to sonatype OSS (snapshot/release)
-			repository(url: this.version.endsWith('-SNAPSHOT') ?
-					'https://oss.sonatype.org/content/repositories/snapshots' :
-					'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
-				authentication(userName: this.hasProperty('sonatypeUsername') ? sonatypeUsername : '',
-					password: this.hasProperty('sonatypePassword') ? sonatypePassword : '')
-			}
-			
-			configurePom(pom)
-		}
-	}
 }
 
 // groovydoc task work-around
@@ -143,35 +105,6 @@ dependencies {
 	jansi 'org.fusesource.jansi:jansi:1.11'
 }
 
-// bintray
-
-bintray { // task bintrayUpload
-	user = project.getProperty('bintrayUser')
-	key = project.getProperty('bintrayApiKey')
-
-	configurations = ['archives']
-	
-	dryRun = false
-	publish = !project.version.endsWith('-SNAPSHOT')
-	pkg {
-		def githubUrl = 'https://github.com/stempler/bnd-platform'
-		repo = 'gradle-plugins'
-		name = 'bnd-platform'
-		desc = 'Build OSGi bundles and p2 repositories / Eclipse Update Sites from existing libraries and their dependencies, e.g. from Maven repositories. Useful for instance for creating a target platform for Eclipse/Equinox or Maven Tycho build from third party dependencies.'
-		websiteUrl = githubUrl
-		issueTrackerUrl = "$githubUrl/issues"
-		vcsUrl = "${githubUrl}.git"
-		licenses = ['Apache-2.0']
-		labels = ['gradle', 'bnd', 'osgi', 'p2', 'eclipse', 'tycho']
-		publicDownloadNumbers = true
-		// version descriptor
-		version {
-			name = project.version
-			attributes = ['gradle-plugin': "org.standardout.bnd-platform:${project.group}:bnd-platform"]
-		}
-	}
-
-}
 
 publishing {
     publications {
